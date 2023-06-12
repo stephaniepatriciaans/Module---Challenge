@@ -1,0 +1,123 @@
+Sub StockAnalysis()
+    Dim ws As Worksheet
+    Dim lastRow, summaryRow As Long
+    Dim ticker As String
+    Dim opening, closing, yearly, total As Double
+    Dim percent As Variant
+    ' greatest part
+    Dim MaxI, MaxD, MaxV As Double
+    Dim MaxIT, MaxDT, MaxVT As String
+        
+    ' Initialize maximum values and corresponding tickers
+    MaxI = 0
+    MaxD = 0
+    MaxV = 0
+    
+     ' Loop through all worksheets
+     For Each ws In Worksheets
+     
+        ' Find the last row of data in the worksheet
+        lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+        
+        ' Set initial summary table headers
+        ws.Cells(1, 9).Value = "Ticker"
+        ws.Cells(1, 10).Value = "Yearly Change"
+        ws.Cells(1, 11).Value = "Percent Change"
+        ws.Cells(1, 12).Value = "Total Volume"
+        
+        ' Initialize summary table row
+        summaryRow = 2
+        j = 0
+        
+        ' Loop through each row
+        For i = 2 To lastRow
+            
+            ' Check if the current ticker within same from the previous ticker, if is not...
+            If ws.Cells(i - 1, 1).Value <> ws.Cells(i, 1).Value Then
+                
+                ' Set ticker symbol
+                ticker = ws.Cells(i, 1).Value
+                Range("I" & j + 2).Value = ticker
+                j = j + 1
+                
+                ' Set opening price
+                opening = ws.Cells(i, 3).Value
+                
+            End If
+            
+            ' Set the closing price
+            closing = ws.Cells(i, 6).Value
+            
+            ' Calculate yearly change
+            yearly = closing - opening
+            
+            ' Calculate percent change
+            If opening <> 0 Then
+                percent = (yearly / opening) * 100
+            Else
+                percent = "."
+            End If
+            
+            ' Set total volume
+            total = ws.Cells(i, 7).Value
+            
+            If percent <> "." Then
+                If percent > MaxI Then
+                    MaxI = percent
+                    MaxIT = ticker
+                ElseIf percent < MaxD Then
+                    MaxD = percent
+                    MaxDT = ticker
+                End If
+            End If
+            
+            If total > MaxV Then
+                MaxV = total
+                MaxVT = ticker
+            End If
+            
+            
+            ' Output the information to the summary table
+            ws.Cells(summaryRow, 9).Value = ticker
+            ws.Cells(summaryRow, 10).Value = yearly
+            ws.Cells(summaryRow, 11).Value = percent
+            ws.Cells(summaryRow, 12).Value = total
+    
+            ' Conditional formatting to highlight positive change in green and negative change in red
+            If yearly > 0 Then
+                ws.Cells(summaryRow, 10).Interior.ColorIndex = 4
+            ElseIf yearly < 0 Then
+                ws.Cells(summaryRow, 10).Interior.ColorIndex = 3
+            End If
+            
+            ' Move to the next row in the summary table
+            summaryRow = summaryRow + 1
+    
+     Next i
+        
+    ' Auto-fit the columns in the summary table
+    ws.Columns("I:L").AutoFit
+    
+    ' Set initial greatest
+    ws.Cells(1, 15).Value = "Ticker"
+    ws.Cells(1, 16).Value = "value"
+    ws.Cells(2, 14).Value = "Greatest % Increase"
+    ws.Cells(3, 14).Value = "Greatest % Decrease"
+    ws.Cells(4, 14).Value = "Greatest Total Volume"
+        
+        ' Output the maximum values and corresponding tickers
+        ws.Range("O2").Value = MaxIT
+        ws.Range("P2").Value = MaxI & "%"
+        ws.Range("O3").Value = MaxDT
+        ws.Range("P3").Value = MaxD & "%"
+        ws.Range("O4").Value = MaxVT
+        ws.Range("P4").Value = MaxV
+        
+    Next ws
+    
+End Sub
+
+Sub button_click()
+    StockAnalysis
+End Sub
+
